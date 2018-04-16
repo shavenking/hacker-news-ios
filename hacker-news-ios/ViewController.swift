@@ -29,11 +29,25 @@ class ViewController: UIViewController {
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.reloadData()
+
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshNews), for: .valueChanged)
+        tableView.addSubview(refreshControl)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        fetchNews()
+    }
+
+    @objc func refreshNews(_ refreshControl: UIRefreshControl) {
+        fetchNews()
+
+        refreshControl.endRefreshing()
+    }
+
+    func fetchNews() {
         URLSession.shared.dataTask(
             with: URL(string: "https://hacker-news.firebaseio.com/v0/beststories.json")!
         ) { (data: Data?, response: URLResponse?, error: Error?) -> Void in
