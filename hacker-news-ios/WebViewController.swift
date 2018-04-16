@@ -5,17 +5,25 @@ class WebViewController: UIViewController {
 
     var webView = UIWebView()
 
+    var backBarButtonItem: UIBarButtonItem?
+    var forwardBarButtonItem: UIBarButtonItem?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         view.addSubview(webView)
 
         webView.frame = view.frame
+        webView.delegate = self
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(dismissViewController))
+        backBarButtonItem = UIBarButtonItem(title: "Back", style: .plain, target: webView, action: #selector(webView.goBack))
+        forwardBarButtonItem = UIBarButtonItem(title: "Forward", style: .plain, target: webView, action: #selector(webView.goForward))
+        backBarButtonItem?.isEnabled = false
+        forwardBarButtonItem?.isEnabled = false
         navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(title: "Forward", style: .plain, target: webView, action: #selector(webView.goForward)),
-            UIBarButtonItem(title: "Back", style: .plain, target: webView, action: #selector(webView.goBack)),
+            forwardBarButtonItem!,
+            backBarButtonItem!,
         ]
     }
 
@@ -27,5 +35,12 @@ class WebViewController: UIViewController {
         super.viewDidAppear(animated)
 
         webView.loadRequest(URLRequest(url: URL(string: news!.url)!))
+    }
+}
+
+extension WebViewController: UIWebViewDelegate {
+    func webViewDidFinishLoad(_ webView: UIWebView) {
+        backBarButtonItem?.isEnabled = webView.canGoBack
+        forwardBarButtonItem?.isEnabled = webView.canGoForward
     }
 }
