@@ -16,7 +16,7 @@ struct News {
 class ViewController: UIViewController {
 
     var tableView = UITableView()
-    var news = [News]()
+    var news: [News?] = Array(repeatElement(nil, count: 30))
     var itemIds = [Int]()
 
     override func viewDidLoad() {
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
         ) { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             let json = try? JSONSerialization.jsonObject(with: data!)
 
-            self.itemIds = json as! [Int]
+            self.itemIds = Array((json as! [Int])[0..<30])
             DispatchQueue.main.async { () -> Void in
                 self.tableView.reloadData()
             }
@@ -49,7 +49,7 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard !news.indices.contains(indexPath.row) else {
+        guard news[indexPath.row] == nil else {
             return
         }
 
@@ -59,7 +59,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
             with: URL(string: "https://hacker-news.firebaseio.com/v0/item/\(id).json")!
         ) { (data: Data?, response: URLResponse?, error: Error?) -> Void in
             let json = try? JSONSerialization.jsonObject(with: data!) as! [String: Any]
-            self.news.append(News(title: json!["title"] as! String, url: "https://news.ycombinator.com/item?id=\(json!["id"] ?? "")"))
+            self.news[indexPath.row] = News(title: json!["title"] as! String, url: "https://news.ycombinator.com/item?id=\(json!["id"] ?? "")")
             DispatchQueue.main.async { () -> Void in
                 self.tableView.reloadRows(at: [indexPath], with: .fade)
             }
@@ -82,8 +82,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.numberOfLines = 0
 
-        if news.indices.contains(indexPath.row) {
-            cell.textLabel?.text = news[indexPath.row].title
+        if news[indexPath.row] != nil {
+            cell.textLabel?.text = news[indexPath.row]?.title
         } else {
             cell.textLabel?.text = "Loading..."
         }
